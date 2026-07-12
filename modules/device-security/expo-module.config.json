@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android", "web"],
+  "apple": {
+    "modules": ["DeviceSecurityModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.devicesecurity.DeviceSecurityModule"]
+  }
+}
