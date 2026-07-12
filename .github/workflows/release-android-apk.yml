@@ -19,8 +19,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout latest main
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -37,8 +39,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify EAS project is linked
+        run: |
+          node -e "
+            const app = require('./app.json');
+            const projectId = app.expo?.extra?.eas?.projectId;
+            if (!projectId) {
+              console.error('Missing expo.extra.eas.projectId in app.json');
+              console.error('Run: npx eas-cli init');
+              process.exit(1);
+            }
+            console.log('EAS projectId:', projectId);
+          "
+
       - name: Link EAS project
-        run: eas init --non-interactive --force
+        run: eas init --id 6e3c21e7-b5e3-4983-a0ef-f05c8f6e9a00 --non-interactive --force
         env:
           EAS_BUILD_NO_EXPO_GO_WARNING: "true"
 
