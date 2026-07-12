@@ -72,6 +72,10 @@ jobs:
           BUILD_ID=$(node -e "const r=require('./build-output.json'); console.log(Array.isArray(r)?r[0].id:r.id)")
           echo "build_id=$BUILD_ID" >> "$GITHUB_OUTPUT"
 
+      - name: Show build details on failure
+        if: failure() && steps.build.outputs.build_id != ''
+        run: npx eas-cli build:view "${{ steps.build.outputs.build_id }}" --json
+
       - name: Download APK
         run: |
           eas build:download \

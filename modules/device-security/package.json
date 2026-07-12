@@ -1,5 +1,10 @@
 {
   "name": "device-security",
   "version": "1.0.0",
-  "main": "index.ts"
+  "main": "index.ts",
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  }
 }

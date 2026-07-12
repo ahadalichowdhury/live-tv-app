@@ -13,45 +13,34 @@ class DeviceSecurityModule : Module() {
     Name("DeviceSecurity")
 
     AsyncFunction("getSecurityStatus") {
-      val context = appContext.reactContext ?: return@AsyncFunction securityStatus(
-        vpnActive = false,
-        proxyActive = false,
-        rootedOrJailbroken = false,
-        reasons = listOf("unavailable"),
-      )
+      val context = appContext.reactContext
+      if (context == null) {
+        mapOf(
+          "vpnActive" to false,
+          "proxyActive" to false,
+          "rootedOrJailbroken" to false,
+          "blocked" to false,
+          "reasons" to emptyList<String>(),
+        )
+      } else {
+        val vpnActive = isVpnActive(context)
+        val proxyActive = isProxyActive()
+        val rooted = isDeviceRooted()
 
-      val vpnActive = isVpnActive(context)
-      val proxyActive = isProxyActive()
-      val rooted = isDeviceRooted()
+        val reasons = mutableListOf<String>()
+        if (vpnActive) reasons.add("vpn")
+        if (proxyActive) reasons.add("proxy")
+        if (rooted) reasons.add("root")
 
-      val reasons = mutableListOf<String>()
-      if (vpnActive) reasons.add("vpn")
-      if (proxyActive) reasons.add("proxy")
-      if (rooted) reasons.add("root")
-
-      securityStatus(
-        vpnActive = vpnActive,
-        proxyActive = proxyActive,
-        rootedOrJailbroken = rooted,
-        reasons = reasons,
-      )
+        mapOf(
+          "vpnActive" to vpnActive,
+          "proxyActive" to proxyActive,
+          "rootedOrJailbroken" to rooted,
+          "blocked" to vpnActive || proxyActive || rooted,
+          "reasons" to reasons,
+        )
+      }
     }
-  }
-
-  private fun securityStatus(
-    vpnActive: Boolean,
-    proxyActive: Boolean,
-    rootedOrJailbroken: Boolean,
-    reasons: List<String>,
-  ): Map<String, Any> {
-    val blocked = vpnActive || proxyActive || rootedOrJailbroken
-    return mapOf(
-      "vpnActive" to vpnActive,
-      "proxyActive" to proxyActive,
-      "rootedOrJailbroken" to rootedOrJailbroken,
-      "blocked" to blocked,
-      "reasons" to reasons,
-    )
   }
 
   private fun isVpnActive(context: Context): Boolean {
