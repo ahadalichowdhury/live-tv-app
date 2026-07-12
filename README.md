@@ -65,6 +65,19 @@ Build in the cloud and publish to **GitHub Releases** so users can download and 
 2. Create a GitHub repo and push this project
 3. Get an Expo token: https://expo.dev/accounts/[account]/settings/access-tokens
 4. Add GitHub repo secret: `EXPO_TOKEN` = your Expo token
+5. Link this app to Expo **once** on your Mac (fixes "EAS project not configured"):
+
+```bash
+cd tv-proxy-mobile
+npm install -g eas-cli
+eas login
+eas init
+git add app.json
+git commit -m "Link Expo EAS project"
+git push origin main
+```
+
+After `eas init`, `app.json` will contain an `extra.eas.projectId` — commit that file.
 
 ### Publish a release
 
