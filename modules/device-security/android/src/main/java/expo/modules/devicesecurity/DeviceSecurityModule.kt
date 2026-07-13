@@ -36,7 +36,7 @@ class DeviceSecurityModule : Module() {
           "vpnActive" to vpnActive,
           "proxyActive" to proxyActive,
           "rootedOrJailbroken" to rooted,
-          "blocked" to vpnActive || proxyActive || rooted,
+          "blocked" to (vpnActive || proxyActive || rooted),
           "reasons" to reasons,
         )
       }
