@@ -77,10 +77,14 @@ jobs:
         run: npx eas-cli build:view "${{ steps.build.outputs.build_id }}" --json
 
       - name: Download APK
+        id: download
         run: |
-          eas build:download \
-            --id "${{ steps.build.outputs.build_id }}" \
-            --output live-tv.apk
+          APK_PATH=$(eas build:download \
+            --build-id "${{ steps.build.outputs.build_id }}" \
+            --non-interactive \
+            --json | node -e "process.stdin.on('data',d=>console.log(JSON.parse(d).path))")
+          cp "$APK_PATH" live-tv.apk
+          ls -lh live-tv.apk
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2

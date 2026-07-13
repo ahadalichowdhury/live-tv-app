@@ -5,6 +5,7 @@ import {
   fetchMobileChannels,
   fetchMobileConfig,
 } from "./src/api/client";
+import { ErrorBoundary } from "./src/components/ErrorBoundary";
 import { BlockedScreen } from "./src/screens/BlockedScreen";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { PlayerScreen } from "./src/screens/PlayerScreen";
@@ -107,7 +108,7 @@ export default function App() {
   }, [groups.length, loadingChannels, security.checking]);
 
   return (
-    <>
+    <ErrorBoundary>
       <StatusBar style="light" />
       {screen === "splash" ? <SplashScreen message={splashMessage} /> : null}
       {screen === "blocked" ? (
@@ -136,6 +137,6 @@ export default function App() {
           onBack={() => setSelectedChannel(null)}
         />
       ) : null}
-    </>
+    </ErrorBoundary>
   );
 }

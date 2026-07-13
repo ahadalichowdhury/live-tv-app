@@ -7,6 +7,7 @@
     "device-security": "file:./modules/device-security",
     "expo": "~57.0.4",
     "expo-av": "^16.0.8",
+    "expo-build-properties": "~57.0.3",
     "expo-constants": "~57.0.3",
     "expo-modules-core": "~57.0.3",
     "expo-screen-orientation": "~57.0.0",

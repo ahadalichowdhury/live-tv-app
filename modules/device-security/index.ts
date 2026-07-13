@@ -6,4 +6,8 @@ export type {
 export {
   evaluateSecurityStatus,
 } from "./src/DeviceSecurity.types";
-export { default as DeviceSecurity } from "./src/DeviceSecurityModule";
+export {
+  default as DeviceSecurity,
+  getDeviceSecurityStatus,
+  isDeviceSecurityAvailable,
+} from "./src/DeviceSecurityModule";

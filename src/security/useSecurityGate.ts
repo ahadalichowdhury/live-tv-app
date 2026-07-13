@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState, Platform } from "react-native";
 
 import {
-  DeviceSecurity,
   evaluateSecurityStatus,
+  getDeviceSecurityStatus,
   type SecurityReason,
   type SecurityPolicy,
 } from "device-security";
@@ -42,7 +42,7 @@ export function useSecurityGate(policy: SecurityPolicy = defaultPolicy) {
     setChecking(true);
 
     try {
-      const status = await DeviceSecurity.getSecurityStatus();
+      const status = await getDeviceSecurityStatus();
       const result = evaluateSecurityStatus(status, policyRef.current);
       setState(result);
       return result;
