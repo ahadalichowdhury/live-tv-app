@@ -83,22 +83,22 @@ jobs:
             --build-id "${{ steps.build.outputs.build_id }}" \
             --non-interactive \
             --json | node -e "process.stdin.on('data',d=>console.log(JSON.parse(d).path))")
-          cp "$APK_PATH" live-tv.apk
-          ls -lh live-tv.apk
+          cp "$APK_PATH" showfy.apk
+          ls -lh showfy.apk
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.build.outputs.tag }}
-          name: Live TV ${{ steps.build.outputs.tag }}
+          name: Showfy ${{ steps.build.outputs.tag }}
           body: |
             ## Install on Android
 
-            1. Download `live-tv.apk` below
+            1. Download `showfy.apk` below
             2. Open it on your phone
             3. Allow install from browser/files if asked
 
             The app connects to `https://proxy.previewcloud.cloud`.
-          files: live-tv.apk
+          files: showfy.apk
           draft: false
           prerelease: false

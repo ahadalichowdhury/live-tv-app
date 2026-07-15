@@ -1,21 +1,24 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { getConfiguredApiBaseUrl } from "../api/client";
+import { colors, radius, spacing } from "../theme";
 
 type SplashScreenProps = {
   message?: string;
 };
 
-export function SplashScreen({ message = "Starting Live TV..." }: SplashScreenProps) {
+export function SplashScreen({ message = "Preparing your guide..." }: SplashScreenProps) {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.container}>
-      <View style={styles.badge}>
-        <Text style={styles.badgeText}>TV</Text>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <View style={styles.glow} />
+      <View style={styles.logoShell}>
+        <Text style={styles.logoMark}>▶</Text>
       </View>
-      <Text style={styles.title}>Live TV</Text>
+      <Text style={styles.brand}>Showfy</Text>
       <Text style={styles.subtitle}>{message}</Text>
-      <ActivityIndicator color="#34d399" style={styles.spinner} />
-      <Text style={styles.apiHint}>API: {getConfiguredApiBaseUrl()}</Text>
+      <ActivityIndicator color={colors.accent} style={styles.spinner} />
     </View>
   );
 }
@@ -23,43 +26,48 @@ export function SplashScreen({ message = "Starting Live TV..." }: SplashScreenPr
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#05070d",
+    backgroundColor: colors.bg,
     alignItems: "center",
     justifyContent: "center",
-    padding: 24,
+    padding: spacing.xxl,
   },
-  badge: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
+  glow: {
+    position: "absolute",
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: colors.accentSoft,
+    top: "28%",
+  },
+  logoShell: {
+    width: 88,
+    height: 88,
+    borderRadius: radius.lg,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#1f2937",
-    marginBottom: 20,
+    backgroundColor: colors.bgCard,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.xl,
   },
-  badgeText: {
-    color: "#ffffff",
-    fontSize: 24,
+  logoMark: {
+    color: colors.accent,
+    fontSize: 34,
     fontWeight: "900",
   },
-  title: {
-    color: "#ffffff",
-    fontSize: 28,
-    fontWeight: "700",
+  brand: {
+    color: colors.text,
+    fontSize: 32,
+    fontWeight: "900",
+    letterSpacing: -0.5,
   },
   subtitle: {
-    color: "#9ca3af",
+    color: colors.textMuted,
     fontSize: 15,
-    marginTop: 8,
+    marginTop: spacing.sm,
     textAlign: "center",
   },
   spinner: {
-    marginTop: 28,
-  },
-  apiHint: {
-    position: "absolute",
-    bottom: 24,
-    color: "#4b5563",
-    fontSize: 11,
+    marginTop: spacing.xxl,
   },
 });

@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Live TV",
+    "name": "Showfy",
     "slug": "tv-proxy-mobile",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -30,7 +30,8 @@
         "expo-build-properties",
         {
           "android": {
-            "newArchEnabled": false
+            "newArchEnabled": false,
+            "usesCleartextTraffic": true
           },
           "ios": {
             "newArchEnabled": false

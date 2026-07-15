@@ -1,8 +1,11 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { colors, radius, spacing } from "../theme";
+
 type Props = {
   children: ReactNode;
+  onReset?: () => void;
 };
 
 type State = {
@@ -20,17 +23,19 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error("App crashed:", error, info.componentStack);
   }
 
+  private handleReset = () => {
+    this.props.onReset?.();
+    this.setState({ error: null });
+  };
+
   render() {
     if (this.state.error) {
       return (
         <View style={styles.container}>
-          <Text style={styles.title}>App error</Text>
+          <Text style={styles.title}>Something went wrong</Text>
           <Text style={styles.body}>{this.state.error.message}</Text>
-          <Pressable
-            style={styles.button}
-            onPress={() => this.setState({ error: null })}
-          >
-            <Text style={styles.buttonText}>Try again</Text>
+          <Pressable style={styles.button} onPress={this.handleReset}>
+            <Text style={styles.buttonText}>Back to channels</Text>
           </Pressable>
         </View>
       );
@@ -43,31 +48,31 @@ export class ErrorBoundary extends Component<Props, State> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#05070d",
+    backgroundColor: colors.bg,
     alignItems: "center",
     justifyContent: "center",
-    padding: 24,
+    padding: spacing.xxl,
   },
   title: {
-    color: "#f87171",
+    color: colors.danger,
     fontSize: 22,
     fontWeight: "700",
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   body: {
-    color: "#d1d5db",
+    color: colors.textMuted,
     textAlign: "center",
-    lineHeight: 20,
+    lineHeight: 22,
   },
   button: {
-    marginTop: 24,
-    backgroundColor: "#10b981",
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 10,
+    marginTop: spacing.xxl,
+    backgroundColor: colors.accent,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
   },
   buttonText: {
-    color: "#04120d",
+    color: colors.text,
     fontWeight: "700",
   },
 });

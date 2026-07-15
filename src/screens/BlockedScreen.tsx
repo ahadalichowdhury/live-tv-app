@@ -1,15 +1,17 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { colors, radius, spacing } from "../theme";
 import type { SecurityReason } from "device-security";
 
 const REASON_COPY: Record<SecurityReason, { title: string; body: string }> = {
   vpn: {
     title: "VPN detected",
-    body: "Turn off your VPN, then reopen the app.",
+    body: "Turn off your VPN, then tap check again.",
   },
   proxy: {
     title: "Proxy detected",
-    body: "Remove Wi-Fi or system proxy settings, then reopen the app.",
+    body: "Remove Wi-Fi or system proxy settings, then try again.",
   },
   root: {
     title: "Modified device",
@@ -31,12 +33,20 @@ type BlockedScreenProps = {
 };
 
 export function BlockedScreen({ reasons, onRetry }: BlockedScreenProps) {
+  const insets = useSafeAreaInsets();
   const primary = reasons[0] ?? "unavailable";
   const copy = REASON_COPY[primary];
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.icon}>!</Text>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top, paddingBottom: insets.bottom },
+      ]}
+    >
+      <View style={styles.iconShell}>
+        <Text style={styles.icon}>!</Text>
+      </View>
       <Text style={styles.title}>{copy.title}</Text>
       <Text style={styles.body}>{copy.body}</Text>
       {reasons.length > 1 ? (
@@ -54,52 +64,55 @@ export function BlockedScreen({ reasons, onRetry }: BlockedScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#05070d",
+    backgroundColor: colors.bg,
     alignItems: "center",
     justifyContent: "center",
-    padding: 28,
+    padding: spacing.xxl,
+  },
+  iconShell: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 107, 107, 0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 107, 107, 0.28)",
+    marginBottom: spacing.xl,
   },
   icon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    overflow: "hidden",
-    textAlign: "center",
-    lineHeight: 72,
-    fontSize: 36,
+    fontSize: 34,
     fontWeight: "800",
-    color: "#f87171",
-    backgroundColor: "#1f1315",
-    marginBottom: 20,
+    color: colors.danger,
   },
   title: {
-    color: "#ffffff",
+    color: colors.text,
     fontSize: 24,
-    fontWeight: "700",
+    fontWeight: "800",
     textAlign: "center",
   },
   body: {
-    color: "#9ca3af",
+    color: colors.textMuted,
     fontSize: 15,
     lineHeight: 22,
     textAlign: "center",
-    marginTop: 12,
+    marginTop: spacing.md,
   },
   extra: {
-    color: "#6b7280",
+    color: colors.textDim,
     fontSize: 12,
-    marginTop: 10,
+    marginTop: spacing.md,
     textAlign: "center",
   },
   button: {
-    marginTop: 28,
-    backgroundColor: "#10b981",
-    paddingHorizontal: 22,
-    paddingVertical: 12,
-    borderRadius: 12,
+    marginTop: spacing.xxl,
+    backgroundColor: colors.accent,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
   },
   buttonText: {
-    color: "#04120d",
+    color: colors.text,
     fontSize: 15,
     fontWeight: "700",
   },

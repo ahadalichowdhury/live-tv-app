@@ -1,0 +1,22 @@
+services:
+  apk-builder:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    platform: linux/amd64
+    volumes:
+      - .:/app
+      - gradle-cache:/root/.gradle
+      - npm-cache:/root/.npm
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      EXPO_NO_TELEMETRY: "1"
+      CI: "true"
+    working_dir: /app
+    command: ["bash", "scripts/docker-build-apk.sh"]
+
+volumes:
+  gradle-cache:
+  npm-cache:

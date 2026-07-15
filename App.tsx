@@ -1,5 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StatusBar } from "expo-status-bar";
+import * as ExpoSplashScreen from "expo-splash-screen";
+import { StyleSheet, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import {
   fetchMobileChannels,
@@ -25,8 +28,29 @@ export default function App() {
     blockRootedDevices: true,
   });
   const [recheckIntervalMs, setRecheckIntervalMs] = useState(30_000);
+  const initialBootDone = useRef(false);
 
   const security = useSecurityGate(securityPolicy);
+
+  useEffect(() => {
+    void ExpoSplashScreen.preventAutoHideAsync();
+  }, []);
+
+  useEffect(() => {
+    if (security.checking && !initialBootDone.current) {
+      return;
+    }
+
+    void ExpoSplashScreen.hideAsync();
+  }, [security.checking, screen]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void ExpoSplashScreen.hideAsync();
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const loadChannels = useCallback(async () => {
     setLoadingChannels(true);
@@ -36,7 +60,7 @@ export default function App() {
       const response = await fetchMobileChannels();
       setGroups(response.groups);
     } catch {
-      setChannelError("Could not load channels. Check API URL and server.");
+      setChannelError("Could not load channels. Check your connection.");
     } finally {
       setLoadingChannels(false);
     }
@@ -59,12 +83,17 @@ export default function App() {
   }, [loadChannels]);
 
   useEffect(() => {
-    if (security.checking) {
+    if (security.checking && !initialBootDone.current) {
       setScreen("splash");
       return;
     }
 
+    if (!security.checking) {
+      initialBootDone.current = true;
+    }
+
     if (security.blocked) {
+      setSelectedChannel(null);
       setScreen("blocked");
       return;
     }
@@ -98,45 +127,71 @@ export default function App() {
   }, [recheckIntervalMs, screen, security]);
 
   const splashMessage = useMemo(() => {
-    if (security.checking) {
+    if (security.checking && !initialBootDone.current) {
       return "Checking device security...";
     }
     if (loadingChannels && groups.length === 0) {
       return "Loading channels...";
     }
-    return "Starting Live TV...";
+    return "Preparing your guide...";
   }, [groups.length, loadingChannels, security.checking]);
 
+  const handleSelectChannel = useCallback(
+    (channel: MobileChannel) => {
+      void security.recheck().then((result) => {
+        if (!result.blocked) {
+          setSelectedChannel(channel);
+        }
+      });
+    },
+    [security],
+  );
+
+  const handleLeavePlayer = useCallback(() => {
+    setSelectedChannel(null);
+  }, []);
+
   return (
-    <ErrorBoundary>
-      <StatusBar style="light" />
-      {screen === "splash" ? <SplashScreen message={splashMessage} /> : null}
-      {screen === "blocked" ? (
-        <BlockedScreen reasons={security.reasons} onRetry={security.recheck} />
-      ) : null}
-      {screen === "home" ? (
-        <HomeScreen
-          groups={groups}
-          loading={loadingChannels}
-          error={channelError}
-          onRefresh={() => {
-            void loadChannels();
-          }}
-          onSelectChannel={(channel) => {
-            void security.recheck().then((result) => {
-              if (!result.blocked) {
-                setSelectedChannel(channel);
-              }
-            });
-          }}
-        />
-      ) : null}
-      {screen === "player" && selectedChannel ? (
-        <PlayerScreen
-          channel={selectedChannel}
-          onBack={() => setSelectedChannel(null)}
-        />
-      ) : null}
-    </ErrorBoundary>
+    <SafeAreaProvider>
+      <ErrorBoundary onReset={handleLeavePlayer}>
+        <StatusBar style="light" />
+        {screen === "splash" ? <SplashScreen message={splashMessage} /> : null}
+        {screen === "blocked" ? (
+          <BlockedScreen reasons={security.reasons} onRetry={security.recheck} />
+        ) : null}
+        {screen === "home" || screen === "player" ? (
+          <View style={styles.mainStage}>
+            <HomeScreen
+              groups={groups}
+              loading={loadingChannels}
+              error={channelError}
+              onRefresh={() => {
+                void loadChannels();
+              }}
+              onSelectChannel={handleSelectChannel}
+            />
+            {screen === "player" && selectedChannel ? (
+              <View style={styles.playerOverlay}>
+                <PlayerScreen
+                  channel={selectedChannel}
+                  groups={groups}
+                  onSelectChannel={handleSelectChannel}
+                  onBack={handleLeavePlayer}
+                />
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+      </ErrorBoundary>
+    </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  mainStage: {
+    flex: 1,
+  },
+  playerOverlay: {
+    ...StyleSheet.absoluteFill,
+  },
+});

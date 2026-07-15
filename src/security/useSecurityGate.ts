@@ -31,7 +31,8 @@ export function useSecurityGate(policy: SecurityPolicy = defaultPolicy) {
     policyRef.current = policy;
   }, [policy]);
 
-  const runCheck = useCallback(async (): Promise<SecurityBlockState> => {
+  const runCheck = useCallback(
+    async (options?: { silent?: boolean }): Promise<SecurityBlockState> => {
     if (Platform.OS === "web") {
       const cleared = { blocked: false, reasons: [] as SecurityReason[] };
       setState(cleared);
@@ -39,7 +40,9 @@ export function useSecurityGate(policy: SecurityPolicy = defaultPolicy) {
       return cleared;
     }
 
-    setChecking(true);
+    if (!options?.silent) {
+      setChecking(true);
+    }
 
     try {
       const status = await getDeviceSecurityStatus();
@@ -54,16 +57,20 @@ export function useSecurityGate(policy: SecurityPolicy = defaultPolicy) {
       setState(failed);
       return failed;
     } finally {
-      setChecking(false);
+      if (!options?.silent) {
+        setChecking(false);
+      }
     }
-  }, []);
+  },
+    [],
+  );
 
   useEffect(() => {
     void runCheck();
 
     const subscription = AppState.addEventListener("change", (nextState) => {
       if (nextState === "active") {
-        void runCheck();
+        void runCheck({ silent: true });
       }
     });
 
@@ -76,6 +83,6 @@ export function useSecurityGate(policy: SecurityPolicy = defaultPolicy) {
     checking,
     blocked: state.blocked,
     reasons: state.reasons,
-    recheck: runCheck,
+    recheck: () => runCheck({ silent: true }),
   };
 }

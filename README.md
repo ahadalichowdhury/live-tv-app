@@ -8,7 +8,7 @@ Direct-play Android and iOS app. Uses your **existing Go API** — no extra serv
 Mobile App → https://proxy.previewcloud.cloud/mobile/channels → MongoDB
 ```
 
-No `tv-proxy-ui` needed. No `DISABLE_PROXY` needed. The mobile app never uses `/proxy`.
+No `tv-proxy-ui` needed. Streams play **directly from the phone** (like NSPlayer) with Referer/User-Agent headers on every HLS request.
 
 ## Setup
 
@@ -46,14 +46,16 @@ Your existing `.env` on the server is enough — no new variables required.
 
 | Endpoint | Purpose |
 |----------|---------|
-| `GET /mobile/channels` | Channel list |
+| `GET /mobile/channels` | Channel list (URL + Referer/User-Agent headers) |
 | `GET /mobile/config` | Security settings |
 
 ## Notes
 
 - Admin panel (`tv-proxy-ui`) is only for adding channels
-- Streams play directly from the phone
-- Rebuild native app after changing `modules/device-security`
+- Streams play directly from the phone (NSPlayer-style), with Referer/User-Agent sent on every HLS request via ExoPlayer
+- HTTP (`http://`) streams are allowed on Android (`usesCleartextTraffic`)
+- Private IPTV URLs (`172.x`, `10.x`) only work when your phone can reach that network (same Wi‑Fi/VPN as the stream source), same as NSPlayer
+- Rebuild native app after changing `modules/device-security` or `app.json` Android settings
 
 ## Distribute APK via GitHub (no Android Studio)
 
@@ -110,4 +112,38 @@ eas build --platform android --profile production
 ```
 
 Download the APK from the Expo build page, then upload it to a GitHub Release manually.
+
+## Build debug APK with Docker (no Java / Android Studio / Expo token)
+
+Everything runs inside a Linux container (Java + Android SDK included).
+Produces a **debug APK** for testing on your phone — not a signed production release.
+
+### Setup
+
+Make sure Docker Desktop is running.
+
+### Build
+
+```bash
+cd tv-proxy-mobile
+docker compose run --rm apk-builder
+```
+
+Or:
+
+```bash
+npm run build:apk:docker
+```
+
+When finished, APK is at:
+
+```text
+dist/live-tv-debug.apk
+```
+
+Install on your phone (enable install from unknown sources if asked).
+
+First build may take 15–30 minutes (downloads Android SDK + Gradle deps). Later builds are faster thanks to Docker volume caches.
+
+For **signed production APK**, use GitHub Actions or `eas build --platform android --profile production` (requires `EXPO_TOKEN`).
 
