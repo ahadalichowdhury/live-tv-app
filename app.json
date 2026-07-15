@@ -6,11 +6,6 @@
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#05070d"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.tvproxy.mobile"
@@ -42,7 +37,15 @@
           }
         }
       ],
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#05070d"
+        }
+      ]
     ],
     "extra": {
       "eas": {
