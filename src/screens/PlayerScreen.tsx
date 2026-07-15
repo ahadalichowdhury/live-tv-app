@@ -7,7 +7,8 @@ import {
   Text,
   View,
 } from "react-native";
-import { ResizeMode, Video } from "expo-av";
+import { useEventListener } from "expo";
+import { useVideoPlayer, VideoView, type VideoSource } from "expo-video";
 import * as ScreenOrientation from "expo-screen-orientation";
 
 import type { MobileChannel, MobileStreamSource } from "../types";
@@ -16,6 +17,20 @@ type PlayerScreenProps = {
   channel: MobileChannel;
   onBack: () => void;
 };
+
+function buildVideoSource(source: MobileStreamSource): VideoSource {
+  const headers = Object.keys(source.headers).length ? source.headers : undefined;
+  const videoSource: VideoSource = {
+    uri: source.url,
+    headers,
+  };
+
+  if (source.url.includes(".m3u8")) {
+    videoSource.contentType = "hls";
+  }
+
+  return videoSource;
+}
 
 export function PlayerScreen({ channel, onBack }: PlayerScreenProps) {
   const [sourceIndex, setSourceIndex] = useState(0);
@@ -29,15 +44,43 @@ export function PlayerScreen({ channel, onBack }: PlayerScreenProps) {
       return null;
     }
 
-    const headers = Object.keys(activeSource.headers).length
-      ? activeSource.headers
-      : undefined;
-
-    return {
-      uri: activeSource.url,
-      headers,
-    };
+    return buildVideoSource(activeSource);
   }, [activeSource]);
+
+  const player = useVideoPlayer(null, (instance) => {
+    instance.play();
+  });
+
+  useEffect(() => {
+    if (!videoSource) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    void player.replaceAsync(videoSource).then(() => {
+      player.play();
+    });
+  }, [player, videoSource]);
+
+  useEventListener(player, "statusChange", ({ status }) => {
+    if (status === "loading") {
+      setLoading(true);
+      return;
+    }
+
+    if (status === "readyToPlay") {
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    if (status === "error") {
+      setLoading(false);
+      setError("Playback failed. Try another source.");
+    }
+  });
 
   useEffect(() => {
     void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
@@ -60,21 +103,11 @@ export function PlayerScreen({ channel, onBack }: PlayerScreenProps) {
 
   return (
     <View style={styles.container}>
-      <Video
+      <VideoView
         style={styles.video}
-        source={videoSource}
-        useNativeControls
-        resizeMode={ResizeMode.CONTAIN}
-        shouldPlay
-        onLoadStart={() => {
-          setLoading(true);
-          setError(null);
-        }}
-        onLoad={() => setLoading(false)}
-        onError={() => {
-          setLoading(false);
-          setError("Playback failed. Try another source.");
-        }}
+        player={player}
+        nativeControls
+        contentFit="contain"
       />
 
       <View style={styles.overlayTop}>
